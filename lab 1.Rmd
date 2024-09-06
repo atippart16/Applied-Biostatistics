@@ -1,0 +1,142 @@
+---
+title: Lab 1 
+author: Akanksha
+date: "OpenIntro Biostatistics"
+
+fontsize: 11pt
+geometry: margin=1in
+
+output:
+  pdf_document:
+    fig_width: 5
+    fig_height: 3.5
+---
+
+\begin{small}
+	
+	\textbf{Topics}
+	\begin{itemize}
+	  \item Dataset manipulation in \textsf{R}
+	  \item Numerical summaries: mean, SD, median, IQR
+	  \item Graphical summaries: boxplots, histograms, scatterplots
+	\end{itemize}
+	
+\end{small}
+
+The first two sections of this lab introduce basic tools for working with data matrices, as well as the commands for producing numerical and graphical summaries. The last section focuses on data interpretation and reinforces the statistical concepts presented in the text. The material in this lab corresponds to Sections 1.1 - 1.2 and 1.4 - 1.6 of \textit{OpenIntro Biostatistics}.
+
+<!---
+This is an R Markdown comment block. Text within the "arrows" will not appear in the knitted PDF. Additional notes that do not appear in the lab handout are included in the template as hidden comments; typically, these notes deal with details of R Markdown syntax or R code.
+--->
+
+<!---
+As you work through the lab, remember that it is not necessary to knit the entire document to view the output of a code chunk--refer to Step 8 of the "Intro to Rmd" lab.
+--->
+
+
+### Section 1: BRFSS. 
+
+The Behavioral Risk Factor Surveillance System (BRFSS) is an annual telephone survey of 350,000 people in the United States. The BRFSS is designed to identify risk factors in the adult population and report emerging health trends. For example, respondents are asked about their diet, weekly exercise, possible tobacco use, and healthcare coverage. 
+
+1. Use the following command to download the dataset \texttt{cdc} from a URL. This dataset is a sample of 20,000 people from the survey conducted in 2000, and contains responses from a subset of the questions asked on the survey.
+
+```{r}
+source("http://www.openintro.org/stat/data/cdc.R")
+```
+
+
+
+2. Take a look at the Environment tab, where \texttt{cdc} should now be visible. Click the blue button next to the dataset name to view a summary of the 9 variables contained in the data matrix. To view the dataset itself, click on the name of the dataset; alternatively, enter the command
+
+```{r, eval = FALSE}
+View(cdc)
+```
+
+
+    Each row of the data matrix represents a case and each column represents a variable. Each variable corresponds to a question that was asked in the survey. For \texttt{genhlth}, respondents were asked to evaluate their general health as either "excellent", "very good", "good", "fair", or "poor". The variables \texttt{exerany}, \texttt{hlthplan}, and \texttt{smoke100} are binary variables, with responses recorded as either 0 for "no" and 1 for "yes": whether the respondent exercised in the past month, has health coverage, or has smoked at least 100 cigarettes in their lifetime. The other variables record the respondents' height in inches, weight in pounds, their desired weight (\texttt{wtdesire}), age in years, and gender.
+
+3. The \$ operator in \textsf{R} is used to access variables within a dataset; for example, \texttt{cdc\$height} tells \textsf{R} to look in the \texttt{cdc} dataframe for the \texttt{height} variable. Make a scatterplot of \texttt{height} and \texttt{weight} using the \texttt{plot( )} command:
+
+
+```{r, fig.width = 7, fig.height = 5}
+plot(cdc$weight ~ cdc$height)
+```
+
+    Do \texttt{height} and \texttt{weight} appear to be associated?
+
+    \textcolor{NavyBlue}{The visible upward trend in the cloud of points shows that \texttt{height} and \texttt{weight} are positively associated; weight tends to increase as height increases.}
+
+
+
+
+4. The conversion from inches to meters is 1 in = .0254 m. Create a new variable \texttt{height.m} that records height in meters. Similarly, the conversion from pounds to kilograms is 1 lb = .454 kg. Create a new variable \texttt{weight.kg} that records weight in kilograms.
+
+```{r}
+#create height.m
+height.m = cdc$height*.0254
+
+#create weight.kg
+weight.kg = cdc$weight*.454
+```
+
+
+5. BMI is calculated as weight in kilograms divided by height squared. Create a new variable \texttt{bmi} and make a scatterplot of \texttt{height} and \texttt{BMI}. Do \texttt{height} and \texttt{BMI} seem to be associated?
+
+
+```{r, fig.width = 7, fig.height = 5}
+#create bmi
+bmi = (weight.kg)/(height.m^2)
+
+#plot height and bmi
+plot(cdc$height, bmi)
+```
+
+    \textcolor{NavyBlue}{Height and BMI do not appear to be associated.}
+
+	
+    A BMI of 30 or above is considered obese. Why might health agencies choose to use BMI as a measure of obesity, rather than weight?
+
+    \textcolor{NavyBlue}{Since \texttt{height} and \texttt{BMI} have a much weaker association, it is more useful to use \text{BMI} as a measure of obesity. Using BMI is one way to account for the fact that taller people tend to have more tissue and thus, weigh more than shorter people.}
+
+
+
+6. Row-and-column notation in combination with square brackets can be used to access a subset of the data. For example, to access the sixth variable (\texttt{weight}) of the 567th respondent, use the command:
+
+```{r}
+cdc[567, 6]
+```
+
+    To see the weight for the first ten respondents, use:
+
+```{r}
+cdc[1:10, 6]
+```
+
+    If the column number is omitted, then all the columns will be returned for rows 1 through 10: 
+	
+```{r}
+cdc[1:10, ]
+```
+
+    Likewise, omit the range for the rows to access all observations for column 6. The following will return the weight for all 20,000 respondents:
+
+```{r, eval = FALSE}
+cdc[ ,6] #results of this chunk are hidden with eval = FALSE
+```
+
+7. Use bracket notation to make a scatterplot of \texttt{height} and \texttt{weight} for the first 100 respondents. There are multiple ways to do this\textemdash find one that works!
+
+```{r, fig.height = 4}
+#create a new dataset with just 100 observations
+cdc.100 = cdc[1:100, ]
+plot(cdc.100$height, cdc.100$weight)
+plot(cdc.100$weight, cdc.100$age)
+
+#subset the variables separately
+cdc.100.weight = cdc[1:100, 6]
+cdc.100.height = cdc[1:100, 5]
+plot(cdc.100.height, cdc.100.weight)
+
+#nest the commands
+plot(cdc[1:100, 5], cdc[1:100, 6])
+```
